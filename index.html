@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LG Inverter Control</title>
+  <style>
+    :root {
+      --bg1: #0b132b;
+      --bg2: #1c2541;
+      --card: #111827;
+      --text: #e5e7eb;
+      --ok: #16a34a;
+      --b1: #2563eb;
+      --b2: #0891b2;
+      --b3: #0f766e;
+      --muted: #9ca3af;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at top, var(--bg2), var(--bg1));
+      color: var(--text);
+      font-family: "Segoe UI", Tahoma, sans-serif;
+    }
+    .card {
+      width: min(92vw, 420px);
+      background: rgba(17, 24, 39, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+    }
+    h1 {
+      margin: 0 0 12px;
+      font-size: 1.2rem;
+      letter-spacing: 0.3px;
+    }
+    .buttons {
+      display: grid;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    button {
+      width: 100%;
+      border: 0;
+      border-radius: 12px;
+      color: white;
+      font-size: 1rem;
+      padding: 14px;
+      cursor: pointer;
+      transition: transform 120ms ease, opacity 120ms ease;
+    }
+    button:active { transform: scale(0.99); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; }
+    #connect { background: var(--ok); }
+    #p50 { background: var(--b1); }
+    #p70 { background: var(--b2); }
+    #p9095 { background: var(--b3); }
+    .status {
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.95rem;
+      min-height: 1.4rem;
+    }
+    .hint {
+      margin-top: 8px;
+      font-size: 0.82rem;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>LG Inverter Control</h1>
+    <button id="connect">Connect</button>
+    <div class="buttons">
+      <button id="p50" disabled>50%</button>
+      <button id="p70" disabled>70%</button>
+      <button id="p9095" disabled>90% / 95%</button>
+    </div>
+    <div class="status" id="status">Not connected</div>
+    <div class="hint">Use Chrome or Edge. Web Bluetooth generally needs HTTPS.</div>
+  </main>
+
+  <script>
+    const SERVICE_UUID = "4fafc201-1fb5-459e-8fcc-c5c9c331914b";
+    const CHARACTERISTIC_UUID = "beb5483e-36e1-4688-b7f5-ea07361b26a8";
+    const DEVICE_NAME_PREFIX = "LG-Inverter-Control";
+
+    const statusEl = document.getElementById("status");
+    const connectBtn = document.getElementById("connect");
+    const b50 = document.getElementById("p50");
+    const b70 = document.getElementById("p70");
+    const b9095 = document.getElementById("p9095");
+    const encoder = new TextEncoder();
+
+    let characteristic = null;
+
+    function setControls(enabled) {
+      b50.disabled = !enabled;
+      b70.disabled = !enabled;
+      b9095.disabled = !enabled;
+    }
+
+    async function sendCommand(cmd) {
+      if (!characteristic) return;
+      await characteristic.writeValue(encoder.encode(cmd));
+      statusEl.textContent = "Sent command: " + cmd;
+    }
+
+    connectBtn.addEventListener("click", async () => {
+      try {
+        statusEl.textContent = "Requesting BLE device...";
+        const device = await navigator.bluetooth.requestDevice({
+          filters: [{ namePrefix: DEVICE_NAME_PREFIX }],
+          optionalServices: [SERVICE_UUID]
+        });
+        statusEl.textContent = "Connecting...";
+        const server = await device.gatt.connect();
+        const service = await server.getPrimaryService(SERVICE_UUID);
+        characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+        setControls(true);
+        statusEl.textContent = "Connected";
+      } catch (err) {
+        statusEl.textContent = "Connection error: " + err.message;
+      }
+    });
+
+    b50.addEventListener("click", () => sendCommand("1"));
+    b70.addEventListener("click", () => sendCommand("2"));
+    b9095.addEventListener("click", () => sendCommand("3"));
+  </script>
+</body>
+</html>
