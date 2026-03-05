@@ -14,6 +14,7 @@
       --b1: #2563eb;
       --b2: #0891b2;
       --b3: #0f766e;
+      --off: #dc2626;
       --muted: #9ca3af;
     }
     * { box-sizing: border-box; }
@@ -60,6 +61,13 @@
     #p50 { background: var(--b1); }
     #p70 { background: var(--b2); }
     #p9095 { background: var(--b3); }
+    #off {
+      background: var(--off);
+      font-size: 1.08rem;
+      font-weight: 700;
+      letter-spacing: 0.2px;
+      padding: 18px;
+    }
     .status {
       margin-top: 12px;
       color: var(--muted);
@@ -78,6 +86,7 @@
     <h1>LG Inverter Control</h1>
     <button id="connect">Connect</button>
     <div class="buttons">
+      <button id="off" disabled>EMERGENCY OFF</button>
       <button id="p50" disabled>50%</button>
       <button id="p70" disabled>70%</button>
       <button id="p9095" disabled>90% / 95%</button>
@@ -93,6 +102,7 @@
 
     const statusEl = document.getElementById("status");
     const connectBtn = document.getElementById("connect");
+    const offBtn = document.getElementById("off");
     const b50 = document.getElementById("p50");
     const b70 = document.getElementById("p70");
     const b9095 = document.getElementById("p9095");
@@ -101,6 +111,7 @@
     let characteristic = null;
 
     function setControls(enabled) {
+      offBtn.disabled = !enabled;
       b50.disabled = !enabled;
       b70.disabled = !enabled;
       b9095.disabled = !enabled;
@@ -130,6 +141,7 @@
       }
     });
 
+    offBtn.addEventListener("click", () => sendCommand("E"));
     b50.addEventListener("click", () => sendCommand("1"));
     b70.addEventListener("click", () => sendCommand("2"));
     b9095.addEventListener("click", () => sendCommand("3"));
