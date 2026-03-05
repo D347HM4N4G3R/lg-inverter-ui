@@ -6,93 +6,207 @@
   <title>LG Inverter Control</title>
   <style>
     :root {
-      --bg1: #0b132b;
-      --bg2: #1c2541;
-      --card: #111827;
-      --text: #e5e7eb;
+      --bg-a: #091b2a;
+      --bg-b: #183953;
+      --panel: #0f1724;
+      --panel-border: rgba(255, 255, 255, 0.14);
+      --text: #e6f1ff;
+      --muted: #9bb6cc;
       --ok: #16a34a;
-      --b1: #2563eb;
-      --b2: #0891b2;
+      --b1: #1d4ed8;
+      --b2: #0284c7;
       --b3: #0f766e;
       --off: #dc2626;
-      --muted: #9ca3af;
+      --metric: #132335;
     }
+
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background: radial-gradient(circle at top, var(--bg2), var(--bg1));
       color: var(--text);
+      background:
+        radial-gradient(circle at 20% 10%, rgba(56, 189, 248, 0.18), transparent 45%),
+        radial-gradient(circle at 80% 5%, rgba(14, 165, 233, 0.12), transparent 38%),
+        linear-gradient(155deg, var(--bg-b), var(--bg-a));
       font-family: "Segoe UI", Tahoma, sans-serif;
+      padding: 20px;
     }
-    .card {
-      width: min(92vw, 420px);
-      background: rgba(17, 24, 39, 0.92);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+
+    .wrap {
+      width: min(980px, 100%);
+      margin: 0 auto;
+      display: grid;
+      gap: 14px;
+    }
+
+    .panel {
+      background: rgba(15, 23, 36, 0.95);
+      border: 1px solid var(--panel-border);
       border-radius: 16px;
-      padding: 18px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+      box-shadow: 0 18px 40px rgba(0, 0, 0, 0.32);
+      padding: 16px;
     }
-    h1 {
-      margin: 0 0 12px;
-      font-size: 1.2rem;
-      letter-spacing: 0.3px;
+
+    .title {
+      margin: 0;
+      font-size: 1.25rem;
+      letter-spacing: 0.4px;
     }
+
+    .sub {
+      margin: 4px 0 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .header-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .metric {
+      background: var(--metric);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .metric .label {
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .metric .value {
+      font-size: 1.1rem;
+      font-weight: 700;
+    }
+
     .buttons {
       display: grid;
       gap: 10px;
-      margin-top: 12px;
+      margin-top: 14px;
     }
+
     button {
       width: 100%;
       border: 0;
       border-radius: 12px;
-      color: white;
+      color: #ffffff;
       font-size: 1rem;
       padding: 14px;
       cursor: pointer;
-      transition: transform 120ms ease, opacity 120ms ease;
+      transition: transform 90ms ease, opacity 120ms ease;
     }
+
     button:active { transform: scale(0.99); }
-    button:disabled { opacity: 0.5; cursor: not-allowed; }
-    #connect { background: var(--ok); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    #connect { background: var(--ok); min-width: 130px; }
+    #off { background: var(--off); font-size: 1.1rem; font-weight: 700; padding: 18px; }
     #p50 { background: var(--b1); }
     #p70 { background: var(--b2); }
     #p9095 { background: var(--b3); }
-    #off {
-      background: var(--off);
-      font-size: 1.08rem;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-      padding: 18px;
-    }
+    #clearLog { background: #334155; margin-top: 8px; }
+
     .status {
-      margin-top: 12px;
+      margin-top: 10px;
       color: var(--muted);
-      font-size: 0.95rem;
-      min-height: 1.4rem;
+      min-height: 1.3rem;
+      font-size: 0.92rem;
     }
+
+    .logbox {
+      background: #070b11;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 10px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.84rem;
+      line-height: 1.35;
+      height: 230px;
+      overflow: auto;
+      white-space: pre-wrap;
+      color: #b6f0cc;
+    }
+
     .hint {
       margin-top: 8px;
-      font-size: 0.82rem;
       color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    @media (max-width: 640px) {
+      .metrics { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <main class="card">
-    <h1>LG Inverter Control</h1>
-    <button id="connect">Connect</button>
-    <div class="buttons">
-      <button id="off" disabled>EMERGENCY OFF</button>
-      <button id="p50" disabled>50%</button>
-      <button id="p70" disabled>70%</button>
-      <button id="p9095" disabled>90% / 95%</button>
-    </div>
-    <div class="status" id="status">Not connected</div>
-    <div class="hint">Use Chrome or Edge. Web Bluetooth generally needs HTTPS.</div>
+  <main class="wrap">
+    <section class="panel">
+      <div class="header-row">
+        <div>
+          <h1 class="title">LG Inverter Control</h1>
+          <p class="sub">Preset buttons + live metrics + debug monitor</p>
+        </div>
+        <button id="connect">Connect</button>
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="label">Connection</div>
+          <div class="value" id="mConnection">Disconnected</div>
+        </div>
+        <div class="metric">
+          <div class="label">Last Command</div>
+          <div class="value" id="mLastCmd">-</div>
+        </div>
+        <div class="metric">
+          <div class="label">Target (%)</div>
+          <div class="value" id="mTarget">-</div>
+        </div>
+        <div class="metric">
+          <div class="label">Current (%)</div>
+          <div class="value" id="mCurrent">-</div>
+        </div>
+        <div class="metric">
+          <div class="label">PWM</div>
+          <div class="value" id="mPwm">-</div>
+        </div>
+        <div class="metric">
+          <div class="label">Last RX</div>
+          <div class="value" id="mLastRx">-</div>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button id="off" disabled>EMERGENCY OFF</button>
+        <button id="p50" disabled>50%</button>
+        <button id="p70" disabled>70%</button>
+        <button id="p9095" disabled>90% / 95%</button>
+      </div>
+
+      <div class="status" id="status">Not connected</div>
+      <div class="hint">Android Chrome/Edge recommended for Web Bluetooth.</div>
+    </section>
+
+    <section class="panel">
+      <h2 class="title">Debug Monitor</h2>
+      <p class="sub">Shows BLE TX/RX events and parsed status data.</p>
+      <div class="logbox" id="logbox"></div>
+      <button id="clearLog">Clear Log</button>
+    </section>
   </main>
 
   <script>
@@ -101,14 +215,42 @@
     const DEVICE_NAME_PREFIX = "LG-Inverter-Control";
 
     const statusEl = document.getElementById("status");
+    const logBox = document.getElementById("logbox");
+
     const connectBtn = document.getElementById("connect");
     const offBtn = document.getElementById("off");
     const b50 = document.getElementById("p50");
     const b70 = document.getElementById("p70");
     const b9095 = document.getElementById("p9095");
-    const encoder = new TextEncoder();
+    const clearLogBtn = document.getElementById("clearLog");
 
+    const mConnection = document.getElementById("mConnection");
+    const mLastCmd = document.getElementById("mLastCmd");
+    const mTarget = document.getElementById("mTarget");
+    const mCurrent = document.getElementById("mCurrent");
+    const mPwm = document.getElementById("mPwm");
+    const mLastRx = document.getElementById("mLastRx");
+
+    const encoder = new TextEncoder();
+    const decoder = new TextDecoder();
+
+    let device = null;
     let characteristic = null;
+    let pollTimer = null;
+
+    function nowStamp() {
+      return new Date().toLocaleTimeString();
+    }
+
+    function addLog(msg) {
+      logBox.textContent += `[${nowStamp()}] ${msg}\n`;
+      logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function setStatus(msg) {
+      statusEl.textContent = msg;
+      addLog(msg);
+    }
 
     function setControls(enabled) {
       offBtn.disabled = !enabled;
@@ -117,34 +259,114 @@
       b9095.disabled = !enabled;
     }
 
-    async function sendCommand(cmd) {
+    function updateMetric(el, value) {
+      el.textContent = value;
+    }
+
+    function parseMetrics(text) {
+      const getNum = (key) => {
+        const re = new RegExp(`${key}=([0-9]+)`);
+        const m = text.match(re);
+        return m ? m[1] : null;
+      };
+
+      const target = getNum("target");
+      const current = getNum("current");
+      const pwm = getNum("pwm");
+
+      if (target !== null) updateMetric(mTarget, target);
+      if (current !== null) updateMetric(mCurrent, current);
+      if (pwm !== null) updateMetric(mPwm, pwm);
+      updateMetric(mLastRx, nowStamp());
+    }
+
+    function onNotify(event) {
+      const value = decoder.decode(event.target.value);
+      addLog(`RX: ${value}`);
+      parseMetrics(value);
+    }
+
+    async function tryReadStatus() {
+      if (!characteristic) return;
+      try {
+        const v = await characteristic.readValue();
+        const text = decoder.decode(v);
+        if (text) {
+          addLog(`READ: ${text}`);
+          parseMetrics(text);
+        }
+      } catch (_) {
+        // Ignore read failures silently to avoid log spam.
+      }
+    }
+
+    function startPolling() {
+      stopPolling();
+      pollTimer = setInterval(tryReadStatus, 1500);
+    }
+
+    function stopPolling() {
+      if (pollTimer) {
+        clearInterval(pollTimer);
+        pollTimer = null;
+      }
+    }
+
+    async function sendCommand(cmd, label) {
       if (!characteristic) return;
       await characteristic.writeValue(encoder.encode(cmd));
-      statusEl.textContent = "Sent command: " + cmd;
+      updateMetric(mLastCmd, label);
+      setStatus(`Sent command: ${label}`);
+      addLog(`TX: ${cmd}`);
+    }
+
+    function onDisconnected() {
+      setControls(false);
+      updateMetric(mConnection, "Disconnected");
+      setStatus("Device disconnected");
+      characteristic = null;
+      stopPolling();
     }
 
     connectBtn.addEventListener("click", async () => {
       try {
-        statusEl.textContent = "Requesting BLE device...";
-        const device = await navigator.bluetooth.requestDevice({
+        setStatus("Requesting BLE device...");
+        device = await navigator.bluetooth.requestDevice({
           filters: [{ namePrefix: DEVICE_NAME_PREFIX }],
           optionalServices: [SERVICE_UUID]
         });
-        statusEl.textContent = "Connecting...";
+
+        device.addEventListener("gattserverdisconnected", onDisconnected);
+        setStatus("Connecting...");
+
         const server = await device.gatt.connect();
         const service = await server.getPrimaryService(SERVICE_UUID);
         characteristic = await service.getCharacteristic(CHARACTERISTIC_UUID);
+
+        if (characteristic.properties.notify) {
+          await characteristic.startNotifications();
+          characteristic.addEventListener("characteristicvaluechanged", onNotify);
+          addLog("Notifications enabled");
+        } else {
+          addLog("Characteristic notify not supported. Using read polling.");
+        }
+
         setControls(true);
-        statusEl.textContent = "Connected";
+        updateMetric(mConnection, "Connected");
+        setStatus("Connected");
+        startPolling();
       } catch (err) {
-        statusEl.textContent = "Connection error: " + err.message;
+        setStatus("Connection error: " + err.message);
       }
     });
 
-    offBtn.addEventListener("click", () => sendCommand("E"));
-    b50.addEventListener("click", () => sendCommand("1"));
-    b70.addEventListener("click", () => sendCommand("2"));
-    b9095.addEventListener("click", () => sendCommand("3"));
+    offBtn.addEventListener("click", () => sendCommand("E", "Emergency OFF"));
+    b50.addEventListener("click", () => sendCommand("1", "50%"));
+    b70.addEventListener("click", () => sendCommand("2", "70%"));
+    b9095.addEventListener("click", () => sendCommand("3", "90/95 Toggle"));
+    clearLogBtn.addEventListener("click", () => { logBox.textContent = ""; });
+
+    addLog("UI loaded");
   </script>
 </body>
 </html>
